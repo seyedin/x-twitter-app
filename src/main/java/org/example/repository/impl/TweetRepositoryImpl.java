@@ -43,8 +43,8 @@ public class TweetRepositoryImpl implements TweetRepository {
             """;
 
     private static final String INSERT_TWEET_QUERY = """
-            INSERT INTO Tweets (user_id, content)
-            VALUES (?,  ?)
+            INSERT INTO Tweets (user_id, content, created_date)
+            VALUES (?, ?, current_date);
             """;
 
     private static final String UPDATE_TWEET_QUERY = """
@@ -177,15 +177,21 @@ public class TweetRepositoryImpl implements TweetRepository {
     }
 
     @Override
-    public Integer postTweet(int userId, String content) {
+    public Tweet postTweet(int userId, String content) {
         try {
             Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(INSERT_TWEET_QUERY);
-            pstmt.setInt(1, userId);
-            pstmt.setString(2, content);
-            ResultSet resultSet = pstmt.executeQuery();
+            PreparedStatement preparedStatement = conn.prepareStatement(INSERT_TWEET_QUERY);
+            preparedStatement.setInt(1, userId);
+            preparedStatement.setString(2, content);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
             if (resultSet.next()) {
-                return resultSet.getInt(1);
+                Tweet tweet = new Tweet();
+                tweet.setId(resultSet.getInt("id"));
+                tweet.setContent(content);
+                tweet.setUserId(userId);
+
+                return tweet;
             } else {
                 throw new SQLException("Creating Tweet failed, no ID obtained.");
             }
@@ -196,7 +202,7 @@ public class TweetRepositoryImpl implements TweetRepository {
     }
 
     @Override
-    public boolean updateTweet(int tweetId, String newContent) throws SQLException {
+    public boolean updateTweet(int tweetId, String newContent) {
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement prepareStatement = conn.prepareStatement(UPDATE_TWEET_QUERY);
@@ -207,12 +213,12 @@ public class TweetRepositoryImpl implements TweetRepository {
             return affectedRows > 0; // Return true if a row was updated
         } catch (Exception e) {
             e.printStackTrace();
-            throw new SQLException("updating Tweet failed, no ID obtained.");
         }
+        return false;
     }
 
     @Override
-    public boolean deleteTweetById(int tweetId) throws SQLException {
+    public boolean deleteTweetById(int tweetId) {
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement prepareStatement = conn.prepareStatement(DELETE_TWEET_QUERY);
@@ -221,8 +227,8 @@ public class TweetRepositoryImpl implements TweetRepository {
             return affectedRows > 0; // Return true if a row was deleted
         } catch (Exception e) {
             e.printStackTrace();
-            throw new SQLException("Deleting Tweet failed, no ID obtained.");
         }
+        return false;
     }
 
     @Override

@@ -12,11 +12,11 @@ public interface TweetRepository {
 
     List<Tweet> getAllTweets();
 
-    Integer postTweet(int userId, String content);
+    Tweet postTweet(int userId, String content);
 
-    boolean updateTweet(int tweetId, String newContent) throws SQLException;
+    boolean updateTweet(int tweetId, String newContent) ;
 
-    boolean deleteTweetById(int tweetId) throws SQLException;
+    boolean deleteTweetById(int tweetId);
 
     Integer likeTweet(int userId, int tweetId);
 

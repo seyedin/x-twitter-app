@@ -26,11 +26,12 @@ public class TagRepositoryImpl implements TagRepository {
     public Integer addTagToTweet(int tweetId, String tagName) {
         try {
             int tagId = getOrCreateTagId(tagName);
+
             Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(ADD_TAG_TO_TWEET_QUERY);
-            pstmt.setInt(1, tweetId);
-            pstmt.setInt(2, tagId);
-            ResultSet resultSet = pstmt.executeQuery();
+            PreparedStatement preparedStatement = conn.prepareStatement(ADD_TAG_TO_TWEET_QUERY);
+            preparedStatement.setInt(1, tweetId);
+            preparedStatement.setInt(2, tagId);
+            ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 return resultSet.getInt(1);
             } else {

@@ -22,12 +22,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User loginUser(String username, String password, String email) throws SQLException {
+    public User loginUser(String username, String password, String email) {
         return userRepository.loginUser(username, password, email);
     }
 
     @Override
-    public boolean updateUserProfile(int userId, String displayName, String bio, String username, String newPassword) throws SQLException {
+    public boolean updateUserProfile(int userId, String displayName, String bio, String username, String newPassword) {
         return userRepository.updateUserProfile(userId, displayName, bio, username, newPassword);
     }
 

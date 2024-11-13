@@ -27,17 +27,17 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public Integer postTweet(int userId, String content) {
+    public Tweet postTweet(int userId, String content) {
         return tweetRepository.postTweet(userId, content);
     }
 
     @Override
-    public boolean updateTweet(int tweetId, String newContent) throws SQLException {
+    public boolean updateTweet(int tweetId, String newContent) {
         return tweetRepository.updateTweet(tweetId, newContent);
     }
 
     @Override
-    public boolean deleteTweetById(int tweetId) throws SQLException {
+    public boolean deleteTweetById(int tweetId) {
         return tweetRepository.deleteTweetById(tweetId);
     }
 

@@ -62,7 +62,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User loginUser(String username, String password, String email) throws SQLException {
+    public User loginUser(String username, String password, String email) {
         try {
             String hashedPassword = Utils.hashPassword(password);
             Connection conn = DatabaseConnection.getConnection();
@@ -86,16 +86,14 @@ public class UserRepositoryImpl implements UserRepository {
 
              return user;
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
     @Override
-    public boolean updateUserProfile(int userId, String displayName, String bio, String username, String newPassword) throws SQLException {
+    public boolean updateUserProfile(int userId, String displayName, String bio, String username, String newPassword)  {
 
         try {
             String hashedPassword = Utils.hashPassword(newPassword);
