@@ -1,16 +1,22 @@
 package org.example.repository.impl;
 
 import org.example.datasource.DatabaseConnection;
+import org.example.model.Tag;
 import org.example.repository.TagRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TagRepositoryImpl implements TagRepository {
     private static final String SELECT_TAG_BY_NAME = """
             select * from tags where name like ?
+            """;
+    private static final String SELECT_ALL_TAGS = """
+            select * from tags
             """;
     private static final String INSERT_TAG_QUERY = """
             INSERT INTO Tags (name)
@@ -43,7 +49,6 @@ public class TagRepositoryImpl implements TagRepository {
         return null;
     }
 
-
     // متد برای پیدا کردن یا ایجاد یک تگ
     @Override
     public int getOrCreateTagId(String tagName) throws SQLException {
@@ -74,7 +79,27 @@ public class TagRepositoryImpl implements TagRepository {
             e.printStackTrace();
             throw new SQLException("Failed to get tag id");
         }
-
     }
 
+    @Override
+    public List<Tag> getAllTags() {
+        List<Tag> tags = new ArrayList<>();
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(SELECT_ALL_TAGS);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+
+                Tag tag = new Tag();
+                tag.setTagId(rs.getInt("id"));
+                tag.setName(rs.getString("name"));
+
+                tags.add(tag);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tags;
+    }
 }

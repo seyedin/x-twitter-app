@@ -22,5 +22,7 @@ public interface TweetService {
 
     Integer dislikeTweet(int userId, int tweetId);
 
-    List<Tweet> getTweetsByTag(String tagName) throws SQLException;
+    List<Tweet> getTweetsByTag(String tagName);
+
+    List<Tweet> getAllTweetsAndRetweets();
 }

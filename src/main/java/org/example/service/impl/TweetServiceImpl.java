@@ -52,7 +52,12 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public List<Tweet> getTweetsByTag(String tagName) throws SQLException {
+    public List<Tweet> getTweetsByTag(String tagName) {
         return tweetRepository.getTweetsByTag(tagName);
+    }
+
+    @Override
+    public List<Tweet> getAllTweetsAndRetweets() {
+        return tweetRepository.getAllTweetsAndRetweets();
     }
 }
