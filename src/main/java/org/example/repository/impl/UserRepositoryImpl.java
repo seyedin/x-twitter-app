@@ -40,14 +40,14 @@ public class UserRepositoryImpl implements UserRepository {
     public User registerUser(User user) {
         try {
             Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(SAVE_USER_QUERY);
+            PreparedStatement preparedStatement = conn.prepareStatement(SAVE_USER_QUERY);
             String hashedPassword = Utils.hashPassword(user.getPassword());
-            pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getDisplayName());
-            pstmt.setString(3, user.getEmail());
-            pstmt.setString(4, hashedPassword);
-            pstmt.setString(5, user.getBio());
-            ResultSet resultSet = pstmt.executeQuery();
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getDisplayName());
+            preparedStatement.setString(3, user.getEmail());
+            preparedStatement.setString(4, hashedPassword);
+            preparedStatement.setString(5, user.getBio());
+            ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 int id = resultSet.getInt(1);
                 user.setUserId(id);
