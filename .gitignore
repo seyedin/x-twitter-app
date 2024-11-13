@@ -1,0 +1,15 @@
+target/
+
+#Intellij Files
+*.iml
+.idea/
+web/logs
+
+#Eclipse Files
+.project
+.classpath
+
+performance/results/
+.DS_store
+*.versionsBackup
+
