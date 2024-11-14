@@ -2,7 +2,6 @@ package org.example.service;
 
 import org.example.model.Tweet;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public interface TweetService {
@@ -14,7 +13,7 @@ public interface TweetService {
 
     Tweet postTweet(int userId, String content);
 
-    boolean updateTweet(int tweetId, String newContent) ;
+    boolean updateTweet(int tweetId, String newContent);
 
     boolean deleteTweetById(int tweetId);
 
@@ -25,4 +24,6 @@ public interface TweetService {
     List<Tweet> getTweetsByTag(String tagName);
 
     List<Tweet> getAllTweetsAndRetweets();
+
+    Tweet getTweetById(int tweetId);
 }

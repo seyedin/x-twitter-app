@@ -5,7 +5,6 @@ import org.example.repository.TweetRepository;
 import org.example.repository.impl.TweetRepositoryImpl;
 import org.example.service.TweetService;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class TweetServiceImpl implements TweetService {
@@ -59,5 +58,10 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public List<Tweet> getAllTweetsAndRetweets() {
         return tweetRepository.getAllTweetsAndRetweets();
+    }
+
+    @Override
+    public Tweet getTweetById(int tweetId) {
+        return tweetRepository.getTweetById(tweetId);
     }
 }

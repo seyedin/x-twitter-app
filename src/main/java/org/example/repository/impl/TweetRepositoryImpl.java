@@ -5,10 +5,7 @@ import org.example.model.Retweet;
 import org.example.model.Tweet;
 import org.example.repository.TweetRepository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,12 +59,12 @@ public class TweetRepositoryImpl implements TweetRepository {
             VALUES (?, ?);
             """;
     private static final String DELETE_LIKE_QUERY = """
-            DELETE FROM Likes WHERE tweet_id = ?;
+            DELETE FROM Likes WHERE user_id = ? AND tweet_id = ?;
             """;
 
     private static final String INSERT_DISLIKE_QUERY = """
             INSERT INTO DisLikes (user_id, tweet_id)
-            VALUES (?, ?);
+            VALUES (?, ?) RETURNING id;
             """;
 
     private static final String GET_ALL_TWEETS_QUERY = """
@@ -102,6 +99,7 @@ public class TweetRepositoryImpl implements TweetRepository {
                     LEFT JOIN
                 Retweets rr ON r.id = rr.parent_retweet_id
             """;
+
     @Override
     public List<Tweet> getTweetsAndRetweetsByUserId(int userId) {
         List<Tweet> tweets = new ArrayList<>();
@@ -118,19 +116,22 @@ public class TweetRepositoryImpl implements TweetRepository {
                 Tweet tweet = new Tweet();
                 tweet.setId(rs.getInt("tweet_id"));
                 tweet.setContent(rs.getString("tweet_content"));
-                tweet.setCreateDate(rs.getTimestamp("tweet_created_date").toLocalDateTime());
+                Timestamp tweetCreatedDate = rs.getTimestamp("tweet_created_date");
+                tweet.setCreateDate(tweetCreatedDate != null ? tweetCreatedDate.toLocalDateTime() : null);
 
                 // ری‌توییت مستقیم
                 Retweet retweet = new Retweet();
                 retweet.setRetweetId(rs.getInt("retweet_id"));
                 retweet.setAdditionalContent(rs.getString("retweet_content"));
-                retweet.setCreateDate(rs.getTimestamp("retweet_created_date").toLocalDateTime());
+                Timestamp retweetCreatedDate = rs.getTimestamp("retweet_created_date");
+                retweet.setCreateDate(retweetCreatedDate != null ? retweetCreatedDate.toLocalDateTime() : null);
 
                 // ری‌توییت از ری‌توییت
                 Retweet retweetOfRetweet = new Retweet();
                 retweetOfRetweet.setRetweetId(rs.getInt("retweet_of_retweet_id"));
                 retweetOfRetweet.setAdditionalContent(rs.getString("retweet_of_retweet_content"));
-                retweetOfRetweet.setCreateDate(rs.getTimestamp("retweet_of_retweet_created_date").toLocalDateTime());
+                Timestamp retweetOfRetweetCreatedDate = rs.getTimestamp("retweet_of_retweet_created_date");
+                retweetOfRetweet.setCreateDate(retweetOfRetweetCreatedDate != null ? retweetOfRetweetCreatedDate.toLocalDateTime() : null);
 
                 // اضافه کردن ری‌توییت‌ها به توییت
                 List<Retweet> childRetweets = List.of(retweetOfRetweet);
@@ -174,6 +175,28 @@ public class TweetRepositoryImpl implements TweetRepository {
     }
 
     @Override
+    public Tweet getTweetById(int tweetId) {
+        Tweet tweet = new Tweet();
+        try {
+            String sql = "select * from  tweets where id = ?";
+            Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, tweetId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                tweet.setId(rs.getInt("id"));
+                tweet.setContent(rs.getString("content"));
+                tweet.setCreateDate(rs.getTimestamp("created_date").toLocalDateTime());
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tweet;
+    }
+
+    @Override
     public List<Tweet> getAllTweets() {
         List<Tweet> tweets = new ArrayList<>();
         try {
@@ -200,20 +223,29 @@ public class TweetRepositoryImpl implements TweetRepository {
     public Tweet postTweet(int userId, String content) {
         try {
             Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(INSERT_TWEET_QUERY);
+
+            // Use RETURN_GENERATED_KEYS to retrieve the auto-generated ID.
+            PreparedStatement preparedStatement = conn.prepareStatement(INSERT_TWEET_QUERY, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setInt(1, userId);
             preparedStatement.setString(2, content);
-            ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-                Tweet tweet = new Tweet();
-                tweet.setId(resultSet.getInt("id"));
-                tweet.setContent(content);
-                tweet.setUserId(userId);
+            // Execute the update.
+            int affectedRows = preparedStatement.executeUpdate();
 
-                return tweet;
-            } else {
-                throw new SQLException("Creating Tweet failed, no ID obtained.");
+            // Check if a row was inserted.
+            if (affectedRows > 0) {
+                // Get the generated keys.
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    Tweet tweet = new Tweet();
+                    tweet.setId(generatedKeys.getInt(1)); // Retrieve the generated ID.
+                    tweet.setContent(content);
+                    tweet.setUserId(userId);
+
+                    return tweet;
+                } else {
+                    throw new SQLException("Creating Tweet failed, no ID obtained.");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,11 +258,17 @@ public class TweetRepositoryImpl implements TweetRepository {
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement prepareStatement = conn.prepareStatement(UPDATE_TWEET_QUERY);
-            prepareStatement.setInt(1, tweetId);
-            prepareStatement.setString(2, newContent);
+
+            prepareStatement.setString(1, newContent);
+            prepareStatement.setInt(2, tweetId);
 
             int affectedRows = prepareStatement.executeUpdate();
-            return affectedRows > 0; // Return true if a row was updated
+            if (affectedRows > 0) {
+                return true;
+            } else {
+                System.out.println("No tweet found with the given ID.");
+                return false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -258,9 +296,10 @@ public class TweetRepositoryImpl implements TweetRepository {
             PreparedStatement preparedStatement = conn.prepareStatement(LIKE_TWEET_QUERY);
             preparedStatement.setInt(1, userId);
             preparedStatement.setInt(2, tweetId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                return rowsAffected; // Optionally, return the number of rows affected
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -280,15 +319,21 @@ public class TweetRepositoryImpl implements TweetRepository {
             deleteStmt.executeUpdate();
 
             // Insert the dislike
-            PreparedStatement insertStmt = conn.prepareStatement(INSERT_DISLIKE_QUERY);
+            PreparedStatement insertStmt = conn.prepareStatement(INSERT_DISLIKE_QUERY, Statement.RETURN_GENERATED_KEYS);
             insertStmt.setInt(1, userId);
             insertStmt.setInt(2, tweetId);
-            ResultSet resultSet = insertStmt.executeQuery();
 
-            if (resultSet.next()) {
-                return resultSet.getInt(1); // Return the generated ID
+            int rowsAffected = insertStmt.executeUpdate();
+
+            // Check if any rows were inserted
+            if (rowsAffected > 0) {
+                // Retrieve generated keys (ID)
+                ResultSet generatedKeys = insertStmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1); // Return the generated dislike ID
+                }
             } else {
-                throw new SQLException("Failed to dislike tweet");
+                throw new SQLException("Failed to insert dislike");
             }
 
         } catch (Exception e) {
@@ -303,10 +348,13 @@ public class TweetRepositoryImpl implements TweetRepository {
         List<Tweet> tweets = new ArrayList<>();
         try {
             Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(GET_TWEETS_BY_TAG_QUERY);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
 
+            // ایجاد PreparedStatement و تنظیم پارامتر
+            PreparedStatement preparedStatement = conn.prepareStatement(GET_TWEETS_BY_TAG_QUERY);
+            preparedStatement.setString(1, tagName); // تنظیم پارامتر tagName
+
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
                 Tweet tweet = new Tweet();
                 tweet.setId(rs.getInt("id"));
                 tweet.setContent(rs.getString("content"));
@@ -314,7 +362,6 @@ public class TweetRepositoryImpl implements TweetRepository {
 
                 tweets.add(tweet);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -323,44 +370,53 @@ public class TweetRepositoryImpl implements TweetRepository {
 
     @Override
     public List<Tweet> getAllTweetsAndRetweets() {
-            List<Tweet> tweets = new ArrayList<>();
+        List<Tweet> tweets = new ArrayList<>();
 
-            try {
-                Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement preparedStatement = conn.prepareStatement(GET_ALL_USERS_TWEETS_QUERY);
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            PreparedStatement preparedStatement = conn.prepareStatement(GET_ALL_USERS_TWEETS_QUERY);
 
-                ResultSet rs = preparedStatement.executeQuery();
-                while (rs.next()) {
-                    // توییت اصلی
-                    Tweet tweet = new Tweet();
-                    tweet.setId(rs.getInt("tweet_id"));
-                    tweet.setContent(rs.getString("tweet_content"));
-                    tweet.setCreateDate(rs.getTimestamp("tweet_created_date").toLocalDateTime());
-
-                    // ری‌توییت مستقیم
-                    Retweet retweet = new Retweet();
-                    retweet.setRetweetId(rs.getInt("retweet_id"));
-                    retweet.setAdditionalContent(rs.getString("retweet_content"));
-                    retweet.setCreateDate(rs.getTimestamp("retweet_created_date").toLocalDateTime());
-
-                    // ری‌توییت از ری‌توییت
-                    Retweet retweetOfRetweet = new Retweet();
-                    retweetOfRetweet.setRetweetId(rs.getInt("retweet_of_retweet_id"));
-                    retweetOfRetweet.setAdditionalContent(rs.getString("retweet_of_retweet_content"));
-                    retweetOfRetweet.setCreateDate(rs.getTimestamp("retweet_of_retweet_created_date").toLocalDateTime());
-
-                    // اضافه کردن ری‌توییت‌ها به توییت
-                    List<Retweet> childRetweets = List.of(retweetOfRetweet);
-                    retweet.setChildRetweets(childRetweets);
-
-                    List<Retweet> retweets = List.of(retweet);
-                    tweet.setRetweets(retweets);
-
-                    tweets.add(tweet);
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                // توییت اصلی
+                Tweet tweet = new Tweet();
+                tweet.setId(rs.getInt("tweet_id"));
+                tweet.setContent(rs.getString("tweet_content"));
+                Timestamp tweetCreatedDate = rs.getTimestamp("tweet_created_date");
+                if (tweetCreatedDate != null) {
+                    tweet.setCreateDate(tweetCreatedDate.toLocalDateTime());
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
+
+                // ری‌توییت مستقیم
+                Retweet retweet = new Retweet();
+                retweet.setRetweetId(rs.getInt("retweet_id"));
+                retweet.setAdditionalContent(rs.getString("retweet_content"));
+                Timestamp retweetCreatedDate = rs.getTimestamp("retweet_created_date");
+                if (retweetCreatedDate != null) {
+                    retweet.setCreateDate(retweetCreatedDate.toLocalDateTime());
+                }
+
+                // ری‌توییت از ری‌توییت
+                Retweet retweetOfRetweet = new Retweet();
+                retweetOfRetweet.setRetweetId(rs.getInt("retweet_of_retweet_id"));
+                retweetOfRetweet.setAdditionalContent(rs.getString("retweet_of_retweet_content"));
+                Timestamp retweetOfRetweetCreatedDate = rs.getTimestamp("retweet_of_retweet_created_date");
+                if (retweetOfRetweetCreatedDate != null) {
+                    retweetOfRetweet.setCreateDate(retweetOfRetweetCreatedDate.toLocalDateTime());
+                }
+
+                // اضافه کردن ری‌توییت‌ها به توییت
+                List<Retweet> childRetweets = List.of(retweetOfRetweet);
+                retweet.setChildRetweets(childRetweets);
+
+                List<Retweet> retweets = List.of(retweet);
+                tweet.setRetweets(retweets);
+
+                tweets.add(tweet);
             }
-            return tweets;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return tweets;
+    }
 }

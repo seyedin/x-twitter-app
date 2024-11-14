@@ -4,10 +4,7 @@ import org.example.datasource.DatabaseConnection;
 import org.example.model.Tag;
 import org.example.repository.TagRepository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,15 +31,23 @@ public class TagRepositoryImpl implements TagRepository {
             int tagId = getOrCreateTagId(tagName);
 
             Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement preparedStatement = conn.prepareStatement(ADD_TAG_TO_TWEET_QUERY);
+            PreparedStatement preparedStatement = conn.prepareStatement(ADD_TAG_TO_TWEET_QUERY, Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setInt(1, tweetId);
             preparedStatement.setInt(2, tagId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            } else {
-                throw new SQLException("failed to tag tweet");
+
+            // Execute the insert operation
+            int affectedRows = preparedStatement.executeUpdate();
+
+            // Check if a row was added and retrieve the generated keys
+            if (affectedRows > 0) {
+                try (ResultSet resultSet = preparedStatement.getGeneratedKeys()) {
+                    if (resultSet.next()) {
+                        return resultSet.getInt(1); // Retrieve the generated ID
+                    }
+                }
             }
+
+            throw new SQLException("Failed to tag tweet; no ID obtained.");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,28 +61,35 @@ public class TagRepositoryImpl implements TagRepository {
             Connection conn = DatabaseConnection.getConnection();
             int tagId = -1;
 
-            // چک کردن اینکه آیا تگ قبلا وجود دارد
-            PreparedStatement prepareStatement = conn.prepareStatement(SELECT_TAG_BY_NAME);
-            prepareStatement.setString(1, tagName);
-            try (ResultSet rs = prepareStatement.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("id");
-                }
+            // Check if the tag already exists
+            PreparedStatement selectStatement = conn.prepareStatement(SELECT_TAG_BY_NAME);
+            selectStatement.setString(1, tagName);
+            ResultSet rs = selectStatement.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
             }
 
-            // اگر تگ وجود نداشت، ایجاد تگ جدید
-            PreparedStatement insertTag = conn.prepareStatement(INSERT_TAG_QUERY);
-            insertTag.setString(1, tagName);
-            try (ResultSet resultSet = insertTag.executeQuery()) {
-                if (resultSet.next()) {
-                    tagId = resultSet.getInt(1);
+
+            // If the tag does not exist, create a new tag
+            PreparedStatement insertStatement = conn.prepareStatement(INSERT_TAG_QUERY, Statement.RETURN_GENERATED_KEYS);
+            insertStatement.setString(1, tagName);
+
+            // Execute the insert and check if the row was added
+            int affectedRows = insertStatement.executeUpdate();
+
+            if (affectedRows > 0) {
+                // Get the generated ID
+                try (ResultSet generatedKeys = insertStatement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        tagId = generatedKeys.getInt(1); // Retrieve the generated tag ID
+                    }
                 }
             }
 
             return tagId;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new SQLException("Failed to get tag id");
+            throw new SQLException("Failed to get or create tag ID.");
         }
     }
 

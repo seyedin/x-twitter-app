@@ -1,4 +1,4 @@
-package org.example;
+package org.example.view;
 
 import org.example.model.Retweet;
 import org.example.model.Tag;
@@ -82,7 +82,7 @@ public class Main {
     }
 
     private static void login(Scanner scanner) {
-        System.out.print("Would you like to login with your username (1)  or email (2) ? ");
+        System.out.print("Would you like to login with your username (1) or email (2) ? ");
         int choice = Integer.parseInt(scanner.next());
 
         String username = "";
@@ -107,29 +107,29 @@ public class Main {
 
         User user = userService.loginUser(username, password, email);
         if (user != null) {
-                System.out.println("Login successful!");
+            System.out.println("Login successful!");
             userDashboard(scanner, user);
-            } else {
-                System.out.println("Login failed. Try again.");
-                startMenu();
-            }
+        } else {
+            System.out.println("Login failed. Try again.");
+            startMenu();
+        }
     }
 
     public static void userDashboard(Scanner scanner, User user) {
         System.out.println("\n=======================================");
         System.out.println("User Dashboard:");
-        System.out.println("(1) Tweets Dashboard");
-        System.out.println("(2) Update your profile");
+        System.out.println("(1) Update profile");
+        System.out.println("(2) Tweets Dashboard");
         System.out.println("(3) Logout");
         System.out.print("Choose an option: ");
 
         int choice = Integer.parseInt(scanner.next());
         switch (choice) {
             case 1:
-                tweetsDashboard(scanner, user);
+                updateProfile(scanner, user);
                 break;
             case 2:
-                updateDashboard(scanner, user);
+                tweetsDashboard(scanner, user);
                 break;
             case 3:
                 System.out.println("Logged out successfully!\n");
@@ -142,7 +142,7 @@ public class Main {
         userDashboard(scanner, user);
     }
 
-    private static void updateDashboard(Scanner scanner, User user) {
+    private static void updateProfile(Scanner scanner, User user) {
         System.out.println("\n=======================================");
         System.out.println("Update profile");
         System.out.println("(1) Update Password");
@@ -188,30 +188,29 @@ public class Main {
                 break;
             default:
                 System.out.println("Invalid option. Please try again.");
-                updateDashboard(scanner, user);
+                updateProfile(scanner, user);
         }
     }
 
     private static void tweetsDashboard(Scanner scanner, User user) {
         System.out.println("=======================================");
         System.out.println("Tweet dashboard");
-        System.out.println("(1) Post a new tweet");
-        System.out.println("(2) Post a retweet");
+        System.out.println("(1) Post tweets dashboard");
+        System.out.println("(2) View tweets dashboard");
         System.out.println("(3) Delete tweeted posts");
         System.out.println("(4) Edit tweeted posts");
         System.out.println("(5) Like tweet posts");
         System.out.println("(6) Dislike tweet posts");
-        System.out.println("(7) View tweets dashboard");
-        System.out.println("(8) Back to user Profile");
+        System.out.println("(7) Back to user Profile");
         System.out.print("Choose an option: ");
 
         int choice = Integer.parseInt(scanner.next());
         switch (choice) {
             case 1:
-                postNewTweet(scanner, user);
+                postTweetsDashboard(scanner, user);
                 break;
             case 2:
-                postRetweet(scanner, user);
+                viewTweetsDashboard(scanner, user);
                 break;
             case 3:
                 deleteTweetedPosts(scanner, user);
@@ -226,15 +225,38 @@ public class Main {
                 dislikeTweetPosts(scanner, user);
                 break;
             case 7:
-                viewTweetsDashboard(scanner, user);
-                break;
-            case 8:
                 System.out.println("Back to user profile.");
                 userDashboard(scanner, user);
                 break;
             default:
                 System.out.println("Invalid option. Please try again.");
                 tweetsDashboard(scanner, user);
+        }
+    }
+
+    private static void postTweetsDashboard(Scanner scanner, User user) {
+        System.out.println("=======================================");
+        System.out.println("Post Tweet dashboard");
+        System.out.println("(1) Post a tweet");
+        System.out.println("(2) Post a retweet");
+        System.out.println("(3) Back to Tweet dashboard");
+        System.out.print("Choose an option: ");
+
+        int choice = Integer.parseInt(scanner.next());
+        switch (choice) {
+            case 1:
+                postTweet(scanner, user);
+                break;
+            case 2:
+                postRetweet(scanner, user);
+                break;
+            case 3:
+                System.out.println("Back to tweets dashboard.");
+                tweetsDashboard(scanner, user);
+                break;
+            default:
+                System.out.println("Invalid option. Please try again.");
+                postTweetsDashboard(scanner, user);
         }
     }
 
@@ -268,36 +290,91 @@ public class Main {
         }
     }
 
-    public static void likeTweet(Scanner scanner, User user) {
-        List<Tweet> tweets = tweetService.getAllTweets();
-        System.out.println("Select tweet Id:");
-        for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
-        }
-        int tweetId = Integer.parseInt(scanner.next());
-        Integer id = tweetService.likeTweet(user.getUserId(), tweetId);
-        if (id != null) {
-            System.out.println("Like");
-        } else {
-            System.out.println("Failed to like");
-        }
-        tweetsDashboard(scanner, user);
+    public static void postTweet(Scanner scanner, User user) {
+        System.out.println("Adding a New Tweet");
+        System.out.print("Enter content: ");
+        String content = scanner.next();
+
+        System.out.print("Enter tag: ");
+        String tagName = scanner.next();
+
+        Tweet tweet = tweetService.postTweet(user.getUserId(), content);
+
+        tagService.addTagToTweet(tweet.getId(), tagName);
+
+        System.out.println("Tweet added successfully!");
+        postTweetsDashboard(scanner, user);
     }
 
-    public static void dislikeTweetPosts(Scanner scanner, User user) {
+    public static void postRetweet(Scanner scanner, User user) {
+//        List<Tweet> tweets = tweetService.getAllTweets();
+//        String newContent = "";
+//        System.out.println("Select id of tweet for retweet: ");
+//        for (Tweet tweet : tweets) {
+//            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
+//        }
+//        System.out.print("Choose an option: ");
+//        int selectedTweetId = Integer.parseInt(scanner.next());
+//        System.out.print("Do you want to change the content? Yes(1) / No(2).");
+//        int choice = Integer.parseInt(scanner.next());
+//        switch (choice) {
+//            case 1:
+//                System.out.println("Enter your new content: ");
+//                newContent = scanner.next();
+//                break;
+//            case 2:
+//                newContent = "";
+//                break;
+//            default:
+//                System.out.println("Invalid option. Please try again.");
+//                postRetweet(scanner, user);
+//        }
+//        reTweetService.postReTweet(user.getUserId(), selectedTweetId, null, newContent);
+//        System.out.println("Post retweeted is successful.");
+//        tweetsDashboard(scanner, user);
+        showAllTweetsAndRetweets(scanner, user);
+    }
+
+    private static void deleteTweetedPosts(Scanner scanner, User user) {
         List<Tweet> tweets = tweetService.getAllTweets();
-        System.out.println("Select tweet Id:");
         for (Tweet tweet : tweets) {
             System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
+        System.out.print("Enter tweet ID to delete: ");
         int tweetId = Integer.parseInt(scanner.next());
-        Integer id = tweetService.dislikeTweet(user.getUserId(), tweetId);
-        if (id != null) {
-            System.out.println("disLike");
+
+        boolean success = tweetService.deleteTweetById(tweetId);
+        if (success) {
+            System.out.println("Tweet deleted successfully!");
+            tweetsDashboard(scanner, user);
         } else {
-            System.out.println("Failed to dislike");
+            System.out.println("Failed to delete tweet. Please try again.");
+            deleteTweetedPosts(scanner, user);
         }
-        tweetsDashboard(scanner, user);
+    }
+
+    private static void chooseRetIdOrTweetId(Scanner scanner, User user) {
+        System.out.println("(1). is a retweet:");
+        System.out.println("(2). is a tweet:");
+        System.out.println("(3). Back");
+        System.out.print("Choose an option: ");
+
+        int choice = Integer.parseInt(scanner.next());
+        switch (choice) {
+            case 1:
+                postRetweetOfRetweet(scanner, user);
+                break;
+            case 2:
+                postRetweetOfTweet(scanner, user);
+                break;
+            case 3:
+                System.out.println("Back to tweets dashboard.");
+                tweetsDashboard(scanner, user);
+                break;
+            default:
+                System.out.println("Invalid option. Please try again.");
+                chooseRetIdOrTweetId(scanner, user);
+        }
     }
 
     public static void editTweetedPosts(Scanner scanner, User user) {
@@ -323,65 +400,38 @@ public class Main {
         }
     }
 
-    public static void postRetweet(Scanner scanner, User user) {
+    public static void likeTweet(Scanner scanner, User user) {
         List<Tweet> tweets = tweetService.getAllTweets();
-        String newContent = "";
-        System.out.println("Select id of tweet for retweet: ");
+        System.out.println("Select tweet Id:");
         for (Tweet tweet : tweets) {
             System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
-        int selectedTweetId = Integer.parseInt(scanner.next());
-        System.out.println("Do you want to change the content? Yes(1) / No(2).");
-        int choice = Integer.parseInt(scanner.next());
-        switch (choice) {
-            case 1:
-                System.out.println("Enter your new content: ");
-                newContent = scanner.next();
-                break;
-            case 2:
-                newContent = "";
-                break;
-            default:
-                System.out.println("Invalid option. Please try again.");
-                postRetweet(scanner, user);
-        }
-        reTweetService.postReTweet(user.getUserId(), selectedTweetId, null, newContent);
-        System.out.println("Post retweeted is successful.");
-        tweetsDashboard(scanner, user);
-    }
-
-    public static void postNewTweet(Scanner scanner, User user) {
-        System.out.println("Adding a New Tweet:");
-        System.out.print("Enter content: ");
-        String content = scanner.next();
-
-        System.out.print("Enter tag: ");
-        String tagName = scanner.next();
-
-        Tweet tweet = tweetService.postTweet(user.getUserId(), content);
-
-        tagService.addTagToTweet(tweet.getId(), tagName);
-
-        System.out.println("Tweet added successfully!");
-        tweetsDashboard(scanner, user);
-    }
-
-    private static void deleteTweetedPosts(Scanner scanner, User user) {
-        List<Tweet> tweets = tweetService.getAllTweets();
-        for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
-        }
-        System.out.print("Enter tweet ID to delete: ");
+        System.out.print("Choose an option: ");
         int tweetId = Integer.parseInt(scanner.next());
-
-        boolean success = tweetService.deleteTweetById(tweetId);
-        if (success) {
-            System.out.println("Tweet deleted successfully!");
-            tweetsDashboard(scanner, user);
+        Integer id = tweetService.likeTweet(user.getUserId(), tweetId);
+        if (id != null) {
+            System.out.println("Like");
         } else {
-            System.out.println("Failed to delete tweet. Please try again.");
-            deleteTweetedPosts(scanner, user);
+            System.out.println("Failed to like");
         }
+        tweetsDashboard(scanner, user);
+    }
+
+    public static void dislikeTweetPosts(Scanner scanner, User user) {
+        List<Tweet> tweets = tweetService.getAllTweets();
+        System.out.println("Select tweet Id:");
+        for (Tweet tweet : tweets) {
+            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
+        }
+        System.out.print("Choose an option: ");
+        int tweetId = Integer.parseInt(scanner.next());
+        Integer id = tweetService.dislikeTweet(user.getUserId(), tweetId);
+        if (id != null) {
+            System.out.println("disLike");
+        } else {
+            System.out.println("Failed to dislike");
+        }
+        tweetsDashboard(scanner, user);
     }
 
     public static void viewMyAllTweetedPosts(Scanner scanner, User user) {
@@ -389,14 +439,14 @@ public class Main {
 
         for (Tweet tweet : tweets) {
             System.out.println("----------------------------");
-            System.out.println("Tweet content: " + tweet.getContent());
-            List<Retweet> retweets = tweet.getRetweets();
+            System.out.println("Tweet ID: " + tweet.getId() + " | Tweet content: " + tweet.getContent());
 
+            List<Retweet> retweets = tweet.getRetweets();
             if (retweets != null && !retweets.isEmpty()) {
                 for (Retweet retweet : retweets) {
                     if (retweet.getAdditionalContent() != null && !retweet.getAdditionalContent().isEmpty()) {
                         System.out.println("----------------------------");
-                        System.out.println("Retweet content: " + retweet.getAdditionalContent());
+                        System.out.println("Retweet ID: " + retweet.getRetweetId() + " | Retweet content: " + retweet.getAdditionalContent());
                     }
 
                     List<Retweet> childRetweets = retweet.getChildRetweets();
@@ -404,13 +454,15 @@ public class Main {
                         for (Retweet childRetweet : childRetweets) {
                             if (childRetweet.getAdditionalContent() != null && !childRetweet.getAdditionalContent().isEmpty()) {
                                 System.out.println("----------------------------");
-                                System.out.println("Retweet of Retweet content: " + childRetweet.getAdditionalContent());
+                                System.out.println("Retweet of Retweet ID: " + childRetweet.getRetweetId() + " | Retweet of Retweet content: " + childRetweet.getAdditionalContent());
                             }
                         }
                     }
                 }
             }
         }
+
+
         viewTweetsDashboard(scanner, user);
     }
 
@@ -475,5 +527,78 @@ public class Main {
         }
 
         viewTweetsDashboard(scanner, user);
+    }
+
+    public static void showAllTweetsAndRetweets(Scanner scanner, User user) {
+
+        List<Tweet> tweets = reTweetService.getTweetsAndRetweets();
+
+        for (Tweet tweet : tweets) {
+            System.out.println("----------------------------");
+            System.out.println("Tweet ID: " + tweet.getId() + " | Tweet content: " + tweet.getContent());
+
+            List<Retweet> retweets = tweet.getRetweets();
+            if (retweets != null && !retweets.isEmpty()) {
+                for (Retweet retweet : retweets) {
+                    if (retweet.getAdditionalContent() != null && !retweet.getAdditionalContent().isEmpty()) {
+                        System.out.println("----------------------------");
+                        System.out.println("Retweet ID: " + retweet.getRetweetId() + " | Retweet content: " + retweet.getAdditionalContent());
+                    }
+
+                    List<Retweet> childRetweets = retweet.getChildRetweets();
+                    if (childRetweets != null) {
+                        for (Retweet childRetweet : childRetweets) {
+                            if (childRetweet.getAdditionalContent() != null && !childRetweet.getAdditionalContent().isEmpty()) {
+                                System.out.println("----------------------------");
+                                System.out.println("Retweet of Retweet ID: " + childRetweet.getRetweetId() + " | Retweet of Retweet content: " + childRetweet.getAdditionalContent());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        chooseRetIdOrTweetId(scanner, user);
+    }
+
+    private static void postRetweetOfTweet(Scanner scanner, User user) {
+        System.out.print("Choose a tweet-id: ");
+        int choice = Integer.parseInt(scanner.next());
+        System.out.println("twit-id: " + choice);
+        Tweet tweetById = tweetService.getTweetById(choice);
+        System.out.print("Please enter new content: ");
+        String newContent = scanner.next();
+        Retweet retweet = new Retweet();
+        retweet.setOriginalTweetId(tweetById);
+        retweet.setAdditionalContent(tweetById.getContent());
+        Integer result = reTweetService.postReTweet(user.getUserId(), newContent, retweet);
+
+        if (result > 0) {
+            System.out.println("successfully!");
+            chooseRetIdOrTweetId(scanner, user);
+        } else {
+            System.out.println("Failed. Please try again.");
+            postTweetsDashboard(scanner, user);
+        }
+    }
+
+    private static void postRetweetOfRetweet(Scanner scanner, User user) {
+        System.out.print("Choose a re-tweet-id: ");
+        int choice = Integer.parseInt(scanner.next());
+        System.out.println("re-tweet-id: " + choice);
+
+        System.out.print("Please enter new content: ");
+        String newContent = scanner.next();
+
+        Retweet retweetById = reTweetService.getRetweetById(choice);
+        Integer result = reTweetService.postReTweet(user.getUserId(), newContent, retweetById);
+
+        if (result > 0) {
+            System.out.println("successfully!");
+            chooseRetIdOrTweetId(scanner, user);
+        } else {
+            System.out.println("Failed. Please try again.");
+            postTweetsDashboard(scanner, user);
+        }
     }
 }

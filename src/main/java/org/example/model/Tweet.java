@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class Tweet {
-    private int id;
+    private Integer id;
     private int userId;
     private String content;
     private LocalDateTime createDate;

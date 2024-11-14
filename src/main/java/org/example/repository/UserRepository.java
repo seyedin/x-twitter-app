@@ -2,14 +2,18 @@ package org.example.repository;
 
 import org.example.model.User;
 
-import java.sql.SQLException;
-
 public interface UserRepository {
     User registerUser(User user);
 
     User loginUser(String username, String password, String email);
 
-    boolean updateUserProfile(int userId, String displayName, String bio, String username, String newPassword) ;
+    boolean updateDisplayName(int userId, String displayName);
+
+    boolean updateBio(int userId, String bio);
+
+    boolean updatePassword(int userId, String password);
+
+    boolean updateUsername(int userId, String username);
 
     boolean findByUserNameOrEmail(String username, String email);
 }

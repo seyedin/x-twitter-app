@@ -27,7 +27,7 @@ CREATE TABLE Tags
 
 CREATE TABLE Tweet_Tag
 (
-    tweet_id INT REFERENCES Tweets(id) ON DELETE CASCADE,
+    tweet_id INT REFERENCES Tweets (id) ON DELETE CASCADE,
     tag_id   INT REFERENCES Tags (id) ON DELETE CASCADE,
     PRIMARY KEY (tweet_id, tag_id)
 );
@@ -36,7 +36,7 @@ CREATE TABLE Retweets
 (
     id                 SERIAL PRIMARY KEY,
     user_id            INT REFERENCES Users (id) ON DELETE CASCADE,
-    original_tweet_id  INT REFERENCES Tweets(id) ON DELETE CASCADE,
+    original_tweet_id  INT REFERENCES Tweets (id) ON DELETE CASCADE,
     parent_retweet_id  INT REFERENCES Retweets (id) ON DELETE CASCADE,
     additional_content VARCHAR(280),
     created_date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -58,10 +58,14 @@ CREATE TABLE DisLikes
 
 -- Test data
 INSERT INTO Users (username, display_name, email, password, bio)
-VALUES ('user1', 'User One', 'user1@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'This is User One bio.'),
-       ('user2', 'User Two', 'user2@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'This is User Two bio.'),
-       ('user3', 'User Three', 'user3@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'This is User Three bio.'),
-       ('user4', 'User Four', 'user4@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', 'This is User Four bio.');
+VALUES ('user1', 'User One', 'user1@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+        'This is User One bio.'),
+       ('user2', 'User Two', 'user2@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+        'This is User Two bio.'),
+       ('user3', 'User Three', 'user3@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+        'This is User Three bio.'),
+       ('user4', 'User Four', 'user4@example.com', 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3',
+        'This is User Four bio.');
 
 INSERT INTO Tweets (user_id, content)
 VALUES (1, 'This is a tweet from User One.'),

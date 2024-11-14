@@ -5,8 +5,6 @@ import org.example.repository.UserRepository;
 import org.example.repository.impl.UserRepositoryImpl;
 import org.example.service.UserService;
 
-import java.sql.SQLException;
-
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository = new UserRepositoryImpl();
@@ -27,8 +25,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updateUserProfile(int userId, String displayName, String bio, String username, String newPassword) {
-        return userRepository.updateUserProfile(userId, displayName, bio, username, newPassword);
+    public boolean updateUsername(int userId, String username) {
+        return userRepository.updateUsername(userId, username);
+    }
+
+    @Override
+    public boolean updateDisplayName(int userId, String displayName) {
+        return userRepository.updateDisplayName(userId, displayName);
+    }
+
+    @Override
+    public boolean updateBio(int userId, String bio) {
+        return userRepository.updateBio(userId, bio);
+    }
+
+    @Override
+    public boolean updatePassword(int userId, String password) {
+        return userRepository.updatePassword(userId, password);
     }
 
     @Override

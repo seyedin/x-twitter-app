@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Retweet {
-    private int retweetId;
+    private Integer retweetId;
     private User user;
     private Tweet originalTweetId;
     private Retweet parentRetweetId;
