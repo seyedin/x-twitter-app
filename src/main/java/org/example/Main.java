@@ -13,7 +13,6 @@ import org.example.service.impl.TagServiceImpl;
 import org.example.service.impl.TweetServiceImpl;
 import org.example.service.impl.UserServiceImpl;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -31,6 +30,7 @@ public class Main {
 
     private static void startMenu() {
         Scanner scanner = new Scanner(System.in);
+        System.out.println("=======================================");
         System.out.println("Welcome to the Application!");
         System.out.println("1. SignUp");
         System.out.println("2. Login");
@@ -82,18 +82,18 @@ public class Main {
     }
 
     private static void login(Scanner scanner) {
-        System.out.print("Would you like to login with your username (1)  or email (2) ?");
+        System.out.print("Would you like to login with your username (1)  or email (2) ? ");
         int choice = Integer.parseInt(scanner.next());
 
         String username = "";
         String email = "";
         switch (choice) {
             case 1:
-                System.out.println("Please enter your username: ");
+                System.out.print("Please enter your username: ");
                 username = scanner.next();
                 break;
             case 2:
-                System.out.println("Please enter your email address: ");
+                System.out.print("Please enter your email address: ");
                 email = scanner.next();
                 break;
             default:
@@ -116,10 +116,12 @@ public class Main {
     }
 
     public static void userDashboard(Scanner scanner, User user) {
-        System.out.println("\nUser Dashboard:");
+        System.out.println("\n=======================================");
+        System.out.println("User Dashboard:");
         System.out.println("(1) Tweets Dashboard");
         System.out.println("(2) Update your profile");
         System.out.println("(3) Logout");
+        System.out.print("Choose an option: ");
 
         int choice = Integer.parseInt(scanner.next());
         switch (choice) {
@@ -130,7 +132,7 @@ public class Main {
                 updateDashboard(scanner, user);
                 break;
             case 3:
-                System.out.println("Logged out successfully!");
+                System.out.println("Logged out successfully!\n");
                 startMenu();
                 break;
             default:
@@ -141,6 +143,7 @@ public class Main {
     }
 
     private static void updateDashboard(Scanner scanner, User user) {
+        System.out.println("=======================================");
         System.out.println("Update profile");
         System.out.println("(1) Update Password");
         System.out.println("(2) Update Username");
@@ -154,25 +157,29 @@ public class Main {
                 System.out.println("Enter your new password: ");
                 String newPassword = scanner.next();
                 user.setPassword(newPassword);
-                userService.updateUserProfile(user.getUserId(), user.getDisplayName(), user.getBio(), user.getUsername(), user.getPassword());
+                userService.updatePassword(user.getUserId(), user.getPassword());
+                System.out.println("Updated password successfully!");
                 break;
             case 2:
                 System.out.println("Enter your new username: ");
                 String newUsername = scanner.next();
                 user.setUsername(newUsername);
-                userService.updateUserProfile(user.getUserId(), user.getDisplayName(), user.getBio(), user.getUsername(), user.getPassword());
+                userService.updateUsername(user.getUserId(), user.getUsername());
+                System.out.println("Updated username successfully!");
                 break;
             case 3:
                 System.out.println("Enter your new bio: ");
                 String newBio = scanner.next();
                 user.setBio(newBio);
-                userService.updateUserProfile(user.getUserId(), user.getDisplayName(), user.getBio(), user.getUsername(), user.getPassword());
+                userService.updateBio(user.getUserId(), user.getBio());
+                System.out.println("Updated bio successfully!");
                 break;
             case 4:
                 System.out.println("Enter your new display name: ");
                 String newDisplayName = scanner.next();
                 user.setDisplayName(newDisplayName);
-                userService.updateUserProfile(user.getUserId(), user.getDisplayName(), user.getBio(), user.getUsername(), user.getPassword());
+                userService.updateDisplayName(user.getUserId(), user.getDisplayName());
+                System.out.println("Updated display name successfully!");
                 break;
             case 5:
                 System.out.println("Back to user Profile.");
@@ -185,6 +192,7 @@ public class Main {
     }
 
     private static void tweetsDashboard(Scanner scanner, User user) {
+        System.out.println("=======================================");
         System.out.println("Tweet dashboard");
         System.out.println("(1) Post a new tweet");
         System.out.println("(2) Post a retweet");
@@ -233,7 +241,7 @@ public class Main {
         List<Tweet> tweets = tweetService.getAllTweets();
         System.out.println("Select tweet Id:");
         for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + "Content: " + tweet.getContent());
+            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
         int tweetId = Integer.parseInt(scanner.next());
         Integer id = tweetService.likeTweet(user.getUserId(), tweetId);
@@ -249,7 +257,7 @@ public class Main {
         List<Tweet> tweets = tweetService.getAllTweets();
         System.out.println("Select tweet Id:");
         for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + "Content: " + tweet.getContent());
+            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
         int tweetId = Integer.parseInt(scanner.next());
         Integer id = tweetService.dislikeTweet(user.getUserId(), tweetId);
@@ -262,14 +270,15 @@ public class Main {
     }
 
     public static void editTweetedPosts(Scanner scanner, User user) {
-        System.out.println("Enter Tweet ID to Edit:");
 
-        List<Tweet> allTweets = tweetService.getTweetByUserId(user.getUserId());
-        for (Tweet tweet : allTweets) {
-            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
+        List<Tweet> tweets = tweetService.getAllTweets();
+        for (Tweet tweet : tweets) {
+            System.out.println("Id: " + tweet.getId() + "Content: " + tweet.getContent());
         }
 
+        System.out.println("Enter Tweet ID to Edit:");
         int tweetId = Integer.parseInt(scanner.next());
+
         System.out.print("Enter new content: ");
         String newContent = scanner.next();
         boolean result = tweetService.updateTweet(tweetId, newContent);
@@ -288,7 +297,7 @@ public class Main {
         String newContent = "";
         System.out.println("Select id of tweet for retweet: ");
         for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + "Content: " + tweet.getContent());
+            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
         int selectedTweetId = Integer.parseInt(scanner.next());
         System.out.println("Do you want to change the content? Yes(1) / No(2).");
@@ -315,16 +324,13 @@ public class Main {
         System.out.print("Enter content: ");
         String content = scanner.next();
 
-        System.out.println("Enter tags (comma separated): ");
-        scanner.nextLine();
-        String tagInput = scanner.nextLine();
-        String[] tagNames = tagInput.split(",");
+        System.out.print("Enter tag: ");
+        String tagName = scanner.next();
 
         Tweet tweet = tweetService.postTweet(user.getUserId(), content);
 
-        for (String tagName : tagNames) {
-            tagService.addTagToTweet(tweet.getId(), tagName);
-        }
+        tagService.addTagToTweet(tweet.getId(), tagName);
+
         System.out.println("Tweet added successfully!");
         tweetsDashboard(scanner, user);
     }
@@ -332,7 +338,7 @@ public class Main {
     private static void deleteTweetedPosts(Scanner scanner, User user) {
         List<Tweet> tweets = tweetService.getAllTweets();
         for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + "Content: " + tweet.getContent());
+            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
         System.out.print("Enter tweet ID to delete: ");
         int tweetId = Integer.parseInt(scanner.next());
@@ -422,7 +428,7 @@ public class Main {
         System.out.println("list of tags: ");
         List<Tag> tags = tagService.getAllTags();
         System.out.println("Enter your tag name: ");
-        String tagName = scanner.nextLine();
+        String tagName = scanner.next();
         List<Tweet> tweetsByTag = tweetService.getTweetsByTag(tagName);
         for (Tweet tweet : tweetsByTag) {
             System.out.println("Tweet content: " + tweet.getContent());
