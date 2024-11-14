@@ -143,39 +143,40 @@ public class Main {
     }
 
     private static void updateDashboard(Scanner scanner, User user) {
-        System.out.println("=======================================");
+        System.out.println("\n=======================================");
         System.out.println("Update profile");
         System.out.println("(1) Update Password");
         System.out.println("(2) Update Username");
         System.out.println("(3) Update Bio");
         System.out.println("(4) Update Display Name");
         System.out.println("(5) Back to user Profile");
+        System.out.print("Choose an option: ");
 
         int choice = Integer.parseInt(scanner.next());
         switch (choice) {
             case 1:
-                System.out.println("Enter your new password: ");
+                System.out.print("Enter your new password: ");
                 String newPassword = scanner.next();
                 user.setPassword(newPassword);
                 userService.updatePassword(user.getUserId(), user.getPassword());
-                System.out.println("Updated password successfully!");
+                System.out.print("Updated password successfully!");
                 break;
             case 2:
-                System.out.println("Enter your new username: ");
+                System.out.print("Enter your new username: ");
                 String newUsername = scanner.next();
                 user.setUsername(newUsername);
                 userService.updateUsername(user.getUserId(), user.getUsername());
-                System.out.println("Updated username successfully!");
+                System.out.print("Updated username successfully!");
                 break;
             case 3:
-                System.out.println("Enter your new bio: ");
+                System.out.print("Enter your new bio: ");
                 String newBio = scanner.next();
                 user.setBio(newBio);
                 userService.updateBio(user.getUserId(), user.getBio());
-                System.out.println("Updated bio successfully!");
+                System.out.print("Updated bio successfully!");
                 break;
             case 4:
-                System.out.println("Enter your new display name: ");
+                System.out.print("Enter your new display name: ");
                 String newDisplayName = scanner.next();
                 user.setDisplayName(newDisplayName);
                 userService.updateDisplayName(user.getUserId(), user.getDisplayName());
