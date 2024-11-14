@@ -18,5 +18,16 @@ public class DatabaseConnection {
             throw new RuntimeException(e);
         }
 
+        // JVM Shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }
