@@ -452,12 +452,28 @@ public class Main {
     public static void viewTweetByFilterTag(Scanner scanner, User user) {
         System.out.println("list of tags: ");
         List<Tag> tags = tagService.getAllTags();
-        System.out.println("Enter your tag name: ");
-        String tagName = scanner.next();
-        List<Tweet> tweetsByTag = tweetService.getTweetsByTag(tagName);
-        for (Tweet tweet : tweetsByTag) {
-            System.out.println("Tweet content: " + tweet.getContent());
+
+        if (tags.isEmpty()) {
+            System.out.println("No tags available.");
+        } else {
+            // نمایش تگ‌ها در کنسول
+            for (Tag tag : tags) {
+                System.out.println("- " + tag.getName());
+            }
         }
+
+        System.out.print("Enter your tag name: ");
+        String tagName = scanner.next();
+
+        List<Tweet> tweetsByTag = tweetService.getTweetsByTag(tagName);
+        if (tweetsByTag.isEmpty()) {
+            System.out.println("No tweets found with the tag: " + tagName);
+        } else {
+            for (Tweet tweet : tweetsByTag) {
+                System.out.println("Tweet content: " + tweet.getContent());
+            }
+        }
+
         viewTweetsDashboard(scanner, user);
     }
 }
