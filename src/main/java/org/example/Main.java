@@ -239,6 +239,7 @@ public class Main {
     }
 
     private static void viewTweetsDashboard(Scanner scanner, User user) {
+        System.out.println("\n=======================================");
         System.out.println("View Dashboard");
         System.out.println("(1) View my all tweeted posts");
         System.out.println("(2) View tweets of other users");
@@ -387,15 +388,24 @@ public class Main {
         List<Tweet> tweets = tweetService.getTweetsAndRetweetsByUserId(user.getUserId());
 
         for (Tweet tweet : tweets) {
+            System.out.println("----------------------------");
             System.out.println("Tweet content: " + tweet.getContent());
             List<Retweet> retweets = tweet.getRetweets();
+
             if (retweets != null && !retweets.isEmpty()) {
                 for (Retweet retweet : retweets) {
-                    System.out.println("Retweet content: " + retweet.getAdditionalContent());
+                    if (retweet.getAdditionalContent() != null && !retweet.getAdditionalContent().isEmpty()) {
+                        System.out.println("----------------------------");
+                        System.out.println("Retweet content: " + retweet.getAdditionalContent());
+                    }
+
                     List<Retweet> childRetweets = retweet.getChildRetweets();
                     if (childRetweets != null) {
                         for (Retweet childRetweet : childRetweets) {
-                            System.out.println("Retweet of Retweet content: " + childRetweet.getAdditionalContent());
+                            if (childRetweet.getAdditionalContent() != null && !childRetweet.getAdditionalContent().isEmpty()) {
+                                System.out.println("----------------------------");
+                                System.out.println("Retweet of Retweet content: " + childRetweet.getAdditionalContent());
+                            }
                         }
                     }
                 }
@@ -408,15 +418,29 @@ public class Main {
         List<Tweet> tweets = tweetService.getAllTweetsAndRetweets();
 
         for (Tweet tweet : tweets) {
-            System.out.println("Tweet content: " + tweet.getContent());
+
+            // نمایش محتوای توییت فقط در صورتی که خالی یا null نباشد
+            if (tweet.getContent() != null && !tweet.getContent().isEmpty()) {
+                System.out.println("\nTweet content: " + tweet.getContent());
+            }
+
             List<Retweet> retweets = tweet.getRetweets();
             if (retweets != null && !retweets.isEmpty()) {
                 for (Retweet retweet : retweets) {
-                    System.out.println("Retweet content: " + retweet.getAdditionalContent());
+
+                    // نمایش محتوای ری‌توییت فقط در صورتی که خالی یا null نباشد
+                    if (retweet.getAdditionalContent() != null && !retweet.getAdditionalContent().isEmpty()) {
+                        System.out.println("\nRetweet content: " + retweet.getAdditionalContent());
+                    }
+
                     List<Retweet> childRetweets = retweet.getChildRetweets();
-                    if (childRetweets != null) {
+                    if (childRetweets != null && !childRetweets.isEmpty()) {
                         for (Retweet childRetweet : childRetweets) {
-                            System.out.println("Retweet of Retweet content: " + childRetweet.getAdditionalContent());
+
+                            // نمایش محتوای ری‌توییت از ری‌توییت فقط در صورتی که خالی یا null نباشد
+                            if (childRetweet.getAdditionalContent() != null && !childRetweet.getAdditionalContent().isEmpty()) {
+                                System.out.println("\nRetweet of Retweet content: " + childRetweet.getAdditionalContent());
+                            }
                         }
                     }
                 }
