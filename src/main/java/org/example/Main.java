@@ -238,6 +238,35 @@ public class Main {
         }
     }
 
+    private static void viewTweetsDashboard(Scanner scanner, User user) {
+        System.out.println("View Dashboard");
+        System.out.println("(1) View my all tweeted posts");
+        System.out.println("(2) View tweets of other users");
+        System.out.println("(3) View by filter Tag");
+        System.out.println("(4) Back to tweets dashboard");
+        System.out.print("Choose an option: ");
+
+        int choice = Integer.parseInt(scanner.next());
+        switch (choice) {
+            case 1:
+                viewMyAllTweetedPosts(scanner, user);
+                break;
+            case 2:
+                viewTweetsOfOtherUsers(scanner, user);
+                break;
+            case 3:
+                viewTweetByFilterTag(scanner, user);
+                break;
+            case 4:
+                System.out.println("Back to tweets dashboard");
+                tweetsDashboard(scanner, user);
+                break;
+            default:
+                System.out.println("Invalid option. Please try again.");
+                viewTweetsDashboard(scanner, user);
+        }
+    }
+
     public static void likeTweet(Scanner scanner, User user) {
         List<Tweet> tweets = tweetService.getAllTweets();
         System.out.println("Select tweet Id:");
@@ -274,10 +303,10 @@ public class Main {
 
         List<Tweet> tweets = tweetService.getAllTweets();
         for (Tweet tweet : tweets) {
-            System.out.println("Id: " + tweet.getId() + "Content: " + tweet.getContent());
+            System.out.println("Id: " + tweet.getId() + ", Content: " + tweet.getContent());
         }
 
-        System.out.println("Enter Tweet ID to Edit:");
+        System.out.print("Enter Tweet ID to Edit:");
         int tweetId = Integer.parseInt(scanner.next());
 
         System.out.print("Enter new content: ");
@@ -351,35 +380,6 @@ public class Main {
         } else {
             System.out.println("Failed to delete tweet. Please try again.");
             deleteTweetedPosts(scanner, user);
-        }
-    }
-
-    private static void viewTweetsDashboard(Scanner scanner, User user) {
-        System.out.println("View Dashboard");
-        System.out.println("(1) View my all tweeted posts");
-        System.out.println("(2) View tweets of other users");
-        System.out.println("(3) View by filter Tag");
-        System.out.println("(4) Back to tweets dashboard");
-        System.out.print("Choose an option: ");
-
-        int choice = Integer.parseInt(scanner.next());
-        switch (choice) {
-            case 1:
-                viewMyAllTweetedPosts(scanner, user);
-                break;
-            case 2:
-                viewTweetsOfOtherUsers(scanner, user);
-                break;
-            case 3:
-                viewTweetByFilterTag(scanner, user);
-                break;
-            case 4:
-                System.out.println("Back to tweets dashboard");
-                tweetsDashboard(scanner, user);
-                break;
-            default:
-                System.out.println("Invalid option. Please try again.");
-                viewTweetsDashboard(scanner, user);
         }
     }
 
